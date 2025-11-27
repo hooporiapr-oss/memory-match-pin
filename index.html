@@ -1,847 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akashic Memory Match</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Georgia', serif;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1034 50%, #2d1b4e 100%);
-            min-height: 100vh;
-            color: #e8e8f0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .title {
-            font-size: 3em;
-            font-weight: bold;
-            background: linear-gradient(135deg, #ffd700, #ff8c00, #8a2be2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-            letter-spacing: 4px;
-            text-align: center;
-        }
-
-        .subtitle {
-            color: #d4af37;
-            font-size: 1.2em;
-            font-style: italic;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 3px solid rgba(212, 175, 55, 0.5);
-            border-radius: 20px;
-            padding: 40px;
-            width: 100%;
-            max-width: 700px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
-        }
-
-        .hidden { display: none !important; }
-
-        .back-home {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(212, 175, 55, 0.3);
-            border-radius: 20px;
-            color: #ffd700;
-            text-decoration: none;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .back-home:hover {
-            background: rgba(255, 215, 0, 0.2);
-            border-color: #ffd700;
-        }
-
-        /* ==================== PIN ENTRY STYLES ==================== */
-        .pin-title {
-            color: #ffd700;
-            font-size: 1.5em;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .pin-subtitle {
-            color: #b8b8cc;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 0.95em;
-        }
-
-        .pin-dots {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .pin-dot {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid rgba(212, 175, 55, 0.5);
-            background: transparent;
-            transition: all 0.2s ease;
-        }
-
-        .pin-dot.filled {
-            background: #ffd700;
-            border-color: #ffd700;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
-
-        .pin-keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            max-width: 280px;
-            margin: 0 auto 20px;
-        }
-
-        .pin-key {
-            aspect-ratio: 1/1;
-            font-size: 1.8em;
-            font-family: 'Georgia', serif;
-            border: 2px solid rgba(212, 175, 55, 0.3);
-            background: rgba(255, 255, 255, 0.05);
-            color: #e8e8f0;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .pin-key:hover {
-            background: rgba(255, 215, 0, 0.1);
-            border-color: rgba(255, 215, 0, 0.5);
-        }
-
-        .pin-key:active {
-            transform: scale(0.95);
-            background: rgba(255, 215, 0, 0.2);
-        }
-
-        .pin-key.delete { font-size: 1.2em; }
-        .pin-key.empty { visibility: hidden; }
-
-        .pin-message {
-            text-align: center;
-            min-height: 24px;
-            margin-top: 15px;
-            font-size: 0.95em;
-        }
-
-        .pin-message.error { color: #ff6b6b; }
-        .pin-message.success { color: #4ecdc4; }
-
-        .pin-toggle {
-            text-align: center;
-            margin-top: 25px;
-            color: #b8b8cc;
-        }
-
-        .pin-toggle-link {
-            color: #ffd700;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        /* ==================== GAME STYLES ==================== */
-        .button {
-            width: 100%;
-            background: linear-gradient(135deg, #ffd700, #ff8c00);
-            color: #1a1034;
-            border: none;
-            padding: 15px;
-            border-radius: 30px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'Georgia', serif;
-            margin-top: 10px;
-            transition: all 0.3s ease;
-        }
-        .button:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6); }
-        .button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .button.secondary { background: linear-gradient(135deg, #8a2be2, #4b0082); color: #fff; }
-
-        .welcome-box {
-            background: rgba(255, 215, 0, 0.1);
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .welcome-box h3 { color: #ffd700; margin-bottom: 5px; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
-        .stat-box {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-        }
-        .stat-value { font-size: 2em; color: #ffd700; font-weight: bold; }
-        .stat-label { color: #b8b8cc; font-size: 0.85em; margin-top: 5px; }
-
-        .user-bar { text-align: center; margin-bottom: 20px; color: #d4af37; }
-        .user-bar strong { color: #ffd700; }
-
-        .game-info { display: flex; justify-content: space-around; margin: 20px 0; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 15px; }
-        .info-item { text-align: center; }
-        .info-value { font-size: 1.8em; color: #ffd700; font-weight: bold; }
-        .info-label { color: #b8b8cc; font-size: 0.85em; margin-top: 5px; }
-
-        .display-area {
-            min-height: 320px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 3px solid rgba(212, 175, 55, 0.3);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .message-text { font-size: 1.5em; color: #d4af37; text-align: center; line-height: 1.6; }
-
-        /* ==================== CARD GRID ==================== */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            width: 100%;
-            max-width: 320px;
-            margin: 0 auto;
-        }
-
-        .memory-card {
-            aspect-ratio: 1/1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 2em;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-
-        .memory-card:active { transform: scale(0.95); }
-
-        .memory-card .card-back { color: rgba(255, 255, 255, 0.4); font-size: 1.2em; }
-        .memory-card .card-front { display: none; }
-
-        .memory-card.flipped { background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); }
-        .memory-card.flipped .card-back { display: none; }
-        .memory-card.flipped .card-front { display: block; }
-
-        .memory-card.matched {
-            background: linear-gradient(135deg, #51cf66 0%, #2ecc71 100%);
-            cursor: default;
-        }
-
-        .status-text {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 1.1em;
-            color: #d4af37;
-            min-height: 30px;
-        }
-
-        .results-box {
-            background: rgba(10, 14, 39, 0.95);
-            border: 3px solid #ffd700;
-            border-radius: 15px;
-            padding: 30px;
-            margin-top: 20px;
-            text-align: center;
-        }
-        .results-box h3 { color: #ffd700; font-size: 2em; margin-bottom: 20px; }
-        .result-value { font-size: 4em; color: #ffd700; font-weight: bold; text-shadow: 0 0 20px rgba(255, 215, 0, 0.8); margin: 20px 0; }
-        .result-message { font-size: 1.2em; color: #c4c4d8; margin: 15px 0; }
-        .new-record { background: rgba(255, 215, 0, 0.2); border: 2px solid #ffd700; border-radius: 10px; padding: 15px; margin: 20px 0; font-size: 1.3em; color: #ffd700; font-weight: bold; }
-
-        .instructions {
-            background: rgba(138, 43, 226, 0.1);
-            border: 2px solid rgba(138, 43, 226, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .instructions h4 { color: #8a2be2; margin-bottom: 10px; text-align: center; }
-        .instructions p { color: #c4c4d4; line-height: 1.6; text-align: center; }
-
-        @media (max-width: 768px) {
-            .title { font-size: 2em; }
-            .container { padding: 20px 15px; }
-            .back-home { position: relative; top: auto; left: auto; display: inline-block; margin-bottom: 20px; }
-            .display-area { min-height: auto; padding: 20px 15px; margin: 15px 0; }
-            .card-grid { max-width: 280px; gap: 8px; }
-            .memory-card { font-size: 1.8em; border-radius: 8px; }
-            .message-text { font-size: 1.2em; }
-            .game-info { padding: 15px; margin: 15px 0; }
-            .info-value { font-size: 1.5em; }
-            .pin-keypad { max-width: 240px; }
-            .pin-key { font-size: 1.5em; }
-        }
-
-        @media (max-width: 400px) {
-            .container { padding: 15px 12px; }
-            .card-grid { max-width: 260px; gap: 6px; }
-            .memory-card { font-size: 1.6em; border-width: 2px; }
-            .game-info { padding: 12px; }
-            .info-value { font-size: 1.4em; }
-            .info-label { font-size: 0.75em; }
-            .status-text { font-size: 1em; }
-            .pin-keypad { max-width: 200px; gap: 8px; }
-            .pin-key { font-size: 1.3em; }
-        }
-
-        @media (max-width: 350px) {
-            .card-grid { max-width: 240px; gap: 5px; }
-            .memory-card { font-size: 1.4em; border-radius: 6px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Memory Match</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;overflow-x:hidden}
+body{font-family:Georgia,serif;background:linear-gradient(135deg,#0a0e27,#1a1034,#2d1b4e);min-height:100vh;color:#e8e8f0;display:flex;flex-direction:column;align-items:center;padding:8px;-webkit-tap-highlight-color:transparent}
+.title{font-size:1.4em;background:linear-gradient(135deg,#ffd700,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center}
+.subtitle{color:#d4af37;margin-bottom:6px;font-size:0.8em}
+.box{background:rgba(255,255,255,0.05);border:2px solid rgba(212,175,55,0.5);border-radius:12px;padding:10px;width:calc(100% - 16px);max-width:340px}
+.hidden{display:none!important}
+.banner{background:rgba(255,215,0,0.2);border:1px solid rgba(255,215,0,0.5);color:#ffd700;padding:4px 8px;border-radius:8px;font-size:0.7em}
+.back{padding:4px 8px;background:rgba(255,255,255,0.1);border:1px solid rgba(212,175,55,0.3);border-radius:8px;color:#ffd700;text-decoration:none;font-size:0.7em}
+.top-bar{width:calc(100% - 16px);max-width:340px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.popup-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:5000;padding:12px}
+.popup{background:linear-gradient(135deg,#1a1034,#2d1b4e);border:2px solid rgba(255,215,0,0.3);border-radius:12px;padding:16px;width:90%;max-width:260px;text-align:center}
+.popup h3{color:#e8e8f0;margin-bottom:4px;font-size:0.95em}
+.popup p{color:#a0a0b8;font-size:0.75em;margin-bottom:12px}
+.popup a{display:block;padding:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#e8e8f0;text-decoration:none;margin-bottom:10px;font-size:0.8em}
+.popup button{width:100%;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#1a1034;border:none;padding:8px;border-radius:12px;font-weight:bold;cursor:pointer;font-size:0.85em}
+.pin-title{color:#ffd700;font-size:1em;text-align:center;margin-bottom:4px}
+.pin-sub{color:#b8b8cc;text-align:center;margin-bottom:12px;font-size:0.75em}
+.dots{display:flex;justify-content:center;gap:8px;margin-bottom:12px}
+.dot{width:12px;height:12px;border-radius:50%;border:2px solid rgba(212,175,55,0.5)}
+.dot.on{background:#ffd700;border-color:#ffd700}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;max-width:180px;margin:0 auto 10px}
+.key{aspect-ratio:1;font-size:1.1em;border:2px solid rgba(212,175,55,0.3);background:rgba(255,255,255,0.05);color:#e8e8f0;border-radius:6px;cursor:pointer}
+.key:active{transform:scale(0.95)}
+.key.empty{visibility:hidden}
+.msg{text-align:center;min-height:16px;font-size:0.75em}
+.msg.err{color:#ff6b6b}
+.msg.ok{color:#4ecdc4}
+.toggle{text-align:center;margin-top:10px;color:#b8b8cc;font-size:0.75em}
+.toggle span{color:#ffd700;cursor:pointer;text-decoration:underline}
+.btn{width:100%;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#1a1034;border:none;padding:10px;border-radius:15px;font-size:0.85em;font-weight:bold;cursor:pointer;margin-top:5px}
+.btn:active{transform:scale(0.98)}
+.btn2{background:linear-gradient(135deg,#8a2be2,#4b0082);color:#fff}
+.welcome{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center}
+.welcome h3{color:#ffd700;margin-bottom:2px;font-size:0.95em}
+.welcome p{font-size:0.75em;color:#b8b8cc}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:10px 0}
+.stat{background:rgba(255,255,255,0.05);padding:8px;border-radius:6px;text-align:center;border:1px solid rgba(212,175,55,0.2)}
+.stat b{display:block;font-size:1.2em;color:#ffd700}
+.stat span{color:#b8b8cc;font-size:0.65em}
+.game-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 5px}
+.game-stat{text-align:center}
+.game-stat b{display:block;font-size:1.1em;color:#ffd700}
+.game-stat span{color:#b8b8cc;font-size:0.65em}
+.grid-container{background:rgba(0,0,0,0.3);border-radius:12px;padding:8px;margin:10px 0}
+.match-grid{display:grid;gap:6px;max-width:280px;margin:0 auto}
+.match-cell{aspect-ratio:1;background:linear-gradient(135deg,#3a3a6a,#2a2a5a);border:2px solid rgba(212,175,55,0.3);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.8em;transition:all 0.3s}
+.match-cell.flipped{background:linear-gradient(135deg,#4a4a8a,#3a3a7a);border-color:#ffd700}
+.match-cell.matched{background:linear-gradient(135deg,#2a6a4a,#1a5a3a);border-color:#2ecc71}
+.match-cell:active{transform:scale(0.95)}
+.res-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:flex;justify-content:center;align-items:center;z-index:3000;padding:12px}
+.res{background:linear-gradient(135deg,#1a1034,#2d1b4e);border:2px solid #ffd700;border-radius:12px;padding:16px 12px;width:90%;max-width:300px;text-align:center}
+.res h2{color:#ffd700;margin-bottom:6px;font-size:1.1em}
+.res-score{font-size:2.5em;color:#ffd700;font-weight:bold}
+.res-label{color:#b8b8cc;margin-bottom:10px;font-size:0.8em}
+.res-details{display:flex;justify-content:space-around;margin:10px 0}
+.res-detail{text-align:center}
+.res-detail b{display:block;color:#ffd700;font-size:1.2em}
+.res-detail span{color:#b8b8cc;font-size:0.7em}
+.record{background:rgba(255,215,0,0.2);border:1px solid #ffd700;border-radius:5px;padding:6px;margin:8px 0;color:#ffd700;font-weight:bold;font-size:0.85em}
+.rating{color:#d4af37;margin-bottom:10px;font-size:0.85em}
+</style>
 </head>
 <body>
-    <a href="https://hooporiapr-oss.github.io/akashic-works/" class="back-home">← Back to Home</a>
-    
-    <div class="title">🃏 Akashic Memory Match</div>
-    <div class="subtitle">Match the Pairs</div>
-
-    <!-- PIN LOGIN SCREEN -->
-    <div class="container" id="pinLoginScreen">
-        <div class="pin-title">Enter PIN</div>
-        <div class="pin-subtitle">Enter your 4-digit PIN to play</div>
-        
-        <div class="pin-dots">
-            <div class="pin-dot" id="dot1"></div>
-            <div class="pin-dot" id="dot2"></div>
-            <div class="pin-dot" id="dot3"></div>
-            <div class="pin-dot" id="dot4"></div>
-        </div>
-        
-        <div class="pin-keypad">
-            <button class="pin-key" data-num="1">1</button>
-            <button class="pin-key" data-num="2">2</button>
-            <button class="pin-key" data-num="3">3</button>
-            <button class="pin-key" data-num="4">4</button>
-            <button class="pin-key" data-num="5">5</button>
-            <button class="pin-key" data-num="6">6</button>
-            <button class="pin-key" data-num="7">7</button>
-            <button class="pin-key" data-num="8">8</button>
-            <button class="pin-key" data-num="9">9</button>
-            <button class="pin-key empty"></button>
-            <button class="pin-key" data-num="0">0</button>
-            <button class="pin-key delete">⌫</button>
-        </div>
-        
-        <div class="pin-message" id="pinMessage"></div>
-        
-        <div class="pin-toggle">
-            No account? <span class="pin-toggle-link" id="showCreatePin">Create PIN</span>
-        </div>
-    </div>
-
-    <!-- PIN CREATE SCREEN -->
-    <div class="container hidden" id="pinCreateScreen">
-        <div class="pin-title" id="createPinTitle">Create PIN</div>
-        <div class="pin-subtitle" id="createPinSubtitle">Choose a 4-digit PIN</div>
-        
-        <div class="pin-dots">
-            <div class="pin-dot" id="createDot1"></div>
-            <div class="pin-dot" id="createDot2"></div>
-            <div class="pin-dot" id="createDot3"></div>
-            <div class="pin-dot" id="createDot4"></div>
-        </div>
-        
-        <div class="pin-keypad" id="createKeypad">
-            <button class="pin-key" data-num="1">1</button>
-            <button class="pin-key" data-num="2">2</button>
-            <button class="pin-key" data-num="3">3</button>
-            <button class="pin-key" data-num="4">4</button>
-            <button class="pin-key" data-num="5">5</button>
-            <button class="pin-key" data-num="6">6</button>
-            <button class="pin-key" data-num="7">7</button>
-            <button class="pin-key" data-num="8">8</button>
-            <button class="pin-key" data-num="9">9</button>
-            <button class="pin-key empty"></button>
-            <button class="pin-key" data-num="0">0</button>
-            <button class="pin-key delete">⌫</button>
-        </div>
-        
-        <div class="pin-message" id="createPinMessage"></div>
-        
-        <div class="pin-toggle">
-            Already have a PIN? <span class="pin-toggle-link" id="showLoginPin">Login</span>
-        </div>
-    </div>
-
-    <!-- DASHBOARD SCREEN -->
-    <div class="container hidden" id="dashboardScreen">
-        <div class="welcome-box">
-            <h3>Welcome Back! 🃏</h3>
-            <p style="color: #b8b8cc; margin-top: 5px;">Ready to test your memory?</p>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-box"><div class="stat-value" id="dashGames">0</div><div class="stat-label">Games Played</div></div>
-            <div class="stat-box"><div class="stat-value" id="dashBestTime">--</div><div class="stat-label">Best Time</div></div>
-            <div class="stat-box"><div class="stat-value" id="dashBestMoves">--</div><div class="stat-label">Best Moves</div></div>
-            <div class="stat-box"><div class="stat-value" id="dashRating">--</div><div class="stat-label">Rating</div></div>
-        </div>
-        <button class="button" id="startPlayingBtn">🃏 Start Testing</button>
-        <button class="button secondary" id="dashLogoutBtn">Logout</button>
-    </div>
-
-    <!-- GAME SCREEN -->
-    <div class="container hidden" id="gameScreen">
-        <div class="user-bar">
-            <button class="button secondary" id="gameLogoutBtn" style="display: inline-block; width: auto; padding: 6px 18px; font-size: 0.9em;">Back to Menu</button>
-        </div>
-
-        <div class="game-info">
-            <div class="info-item"><div class="info-value" id="pairsFound">0/6</div><div class="info-label">Pairs Found</div></div>
-            <div class="info-item"><div class="info-value" id="movesDisplay">0</div><div class="info-label">Moves</div></div>
-            <div class="info-item"><div class="info-value" id="timeDisplay">0s</div><div class="info-label">Time</div></div>
-        </div>
-
-        <div class="display-area" id="displayArea">
-            <div class="message-text">Click "Start Game" to begin!</div>
-        </div>
-
-        <button class="button" id="startGameBtn">Start Game</button>
-        <div class="results-box hidden" id="resultsBox"></div>
-
-        <div class="instructions">
-            <h4>How to Play</h4>
-            <p>Tap the cards to flip them over and find matching pairs! Try to complete the game in as few moves as possible.</p>
-        </div>
-    </div>
-
-    <script>
-        // ==================== PIN AUTH SYSTEM ====================
-        const PIN_STORAGE_KEY = 'akashic_pin_hash';
-        const PLAYER_ID_KEY = 'akashic_player_id';
-        const STATS_KEY = 'akashic_match_stats';
-
-        function hashPIN(pin) {
-            let hash = 0;
-            const salted = pin + 'akashic_salt_2024';
-            for (let i = 0; i < salted.length; i++) {
-                hash = ((hash << 5) - hash) + salted.charCodeAt(i);
-                hash = hash & hash;
-            }
-            return hash.toString(36);
-        }
-
-        function generatePlayerId() {
-            return 'player_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-        }
-
-        function hasPIN() {
-            return !!localStorage.getItem(PIN_STORAGE_KEY);
-        }
-
-        function createPIN(pin) {
-            const playerId = generatePlayerId();
-            localStorage.setItem(PIN_STORAGE_KEY, hashPIN(pin));
-            localStorage.setItem(PLAYER_ID_KEY, playerId);
-            localStorage.setItem(STATS_KEY, JSON.stringify({
-                gamesPlayed: 0,
-                bestTime: null,
-                bestMoves: null
-            }));
-            return true;
-        }
-
-        function verifyPIN(pin) {
-            const storedHash = localStorage.getItem(PIN_STORAGE_KEY);
-            return storedHash === hashPIN(pin);
-        }
-
-        function getStats() {
-            const stats = localStorage.getItem(STATS_KEY);
-            return stats ? JSON.parse(stats) : { gamesPlayed: 0, bestTime: null, bestMoves: null };
-        }
-
-        function saveStats(stats) {
-            localStorage.setItem(STATS_KEY, JSON.stringify(stats));
-        }
-
-        function logout() {
-            sessionStorage.removeItem('akashic_logged_in');
-        }
-
-        // ==================== UI FUNCTIONS ====================
-        let currentPIN = '';
-        let confirmPIN = '';
-        let isConfirming = false;
-
-        function showScreen(screenId) {
-            document.querySelectorAll('.container').forEach(el => el.classList.add('hidden'));
-            document.getElementById(screenId).classList.remove('hidden');
-        }
-
-        function updatePinDots(prefix, length) {
-            for (let i = 1; i <= 4; i++) {
-                const dot = document.getElementById(prefix + i);
-                if (dot) {
-                    dot.classList.toggle('filled', i <= length);
-                }
-            }
-        }
-
-        function showPinMessage(elementId, message, isError = false) {
-            const el = document.getElementById(elementId);
-            el.textContent = message;
-            el.className = 'pin-message ' + (isError ? 'error' : 'success');
-        }
-
-        function clearPinMessage(elementId) {
-            const el = document.getElementById(elementId);
-            el.textContent = '';
-            el.className = 'pin-message';
-        }
-
-        // ==================== LOGIN PIN HANDLERS ====================
-        function handleLoginKeyPress(num) {
-            if (currentPIN.length < 4) {
-                currentPIN += num;
-                updatePinDots('dot', currentPIN.length);
-                
-                if (currentPIN.length === 4) {
-                    setTimeout(() => {
-                        if (verifyPIN(currentPIN)) {
-                            sessionStorage.setItem('akashic_logged_in', 'true');
-                            loadDashboard();
-                        } else {
-                            showPinMessage('pinMessage', 'Wrong PIN. Try again.', true);
-                            currentPIN = '';
-                            updatePinDots('dot', 0);
-                        }
-                    }, 200);
-                }
-            }
-        }
-
-        function handleLoginDelete() {
-            if (currentPIN.length > 0) {
-                currentPIN = currentPIN.slice(0, -1);
-                updatePinDots('dot', currentPIN.length);
-                clearPinMessage('pinMessage');
-            }
-        }
-
-        // ==================== CREATE PIN HANDLERS ====================
-        function handleCreateKeyPress(num) {
-            if (confirmPIN.length < 4) {
-                confirmPIN += num;
-                updatePinDots('createDot', confirmPIN.length);
-                
-                if (confirmPIN.length === 4) {
-                    setTimeout(() => {
-                        if (!isConfirming) {
-                            currentPIN = confirmPIN;
-                            confirmPIN = '';
-                            isConfirming = true;
-                            document.getElementById('createPinTitle').textContent = 'Confirm PIN';
-                            document.getElementById('createPinSubtitle').textContent = 'Enter your PIN again';
-                            updatePinDots('createDot', 0);
-                        } else {
-                            if (confirmPIN === currentPIN) {
-                                createPIN(currentPIN);
-                                sessionStorage.setItem('akashic_logged_in', 'true');
-                                showPinMessage('createPinMessage', 'PIN created!', false);
-                                setTimeout(() => loadDashboard(), 500);
-                            } else {
-                                showPinMessage('createPinMessage', 'PINs don\'t match. Try again.', true);
-                                currentPIN = '';
-                                confirmPIN = '';
-                                isConfirming = false;
-                                document.getElementById('createPinTitle').textContent = 'Create PIN';
-                                document.getElementById('createPinSubtitle').textContent = 'Choose a 4-digit PIN';
-                                updatePinDots('createDot', 0);
-                            }
-                        }
-                    }, 200);
-                }
-            }
-        }
-
-        function handleCreateDelete() {
-            if (confirmPIN.length > 0) {
-                confirmPIN = confirmPIN.slice(0, -1);
-                updatePinDots('createDot', confirmPIN.length);
-                clearPinMessage('createPinMessage');
-            }
-        }
-
-        // ==================== DASHBOARD ====================
-        function loadDashboard() {
-            const stats = getStats();
-            document.getElementById('dashGames').textContent = stats.gamesPlayed || 0;
-            document.getElementById('dashBestTime').textContent = stats.bestTime ? stats.bestTime + 's' : '--';
-            document.getElementById('dashBestMoves').textContent = stats.bestMoves || '--';
-            document.getElementById('dashRating').textContent = getRating(stats.bestMoves);
-            showScreen('dashboardScreen');
-        }
-
-        function getRating(moves) {
-            if (!moves) return '--';
-            if (moves <= 12) return '🧠 Genius';
-            if (moves <= 16) return '⭐ Master';
-            if (moves <= 20) return '🔥 Expert';
-            if (moves <= 25) return '💪 Strong';
-            if (moves <= 30) return '👍 Good';
-            return '📚 Learning';
-        }
-
-        // ==================== GAME LOGIC ====================
-        const emojis = ['🎯', '⭐', '🔥', '💎', '🎨', '🎭', '🎪', '🎬', '🎸', '🎮', '🚀', '⚡'];
-        let cards = [];
-        let flippedCards = [];
-        let matchedPairs = 0;
-        let moves = 0;
-        let timeElapsed = 0;
-        let gameActive = false;
-        let timerInterval = null;
-        let canFlip = true;
-
-        function initGame() {
-            const displayArea = document.getElementById('displayArea');
-            displayArea.innerHTML = `<div class="message-text">Click "Start Game" to begin!</div>`;
-            document.getElementById('pairsFound').textContent = '0/6';
-            document.getElementById('movesDisplay').textContent = '0';
-            document.getElementById('timeDisplay').textContent = '0s';
-            document.getElementById('resultsBox').classList.add('hidden');
-        }
-
-        function createCards() {
-            const selectedEmojis = emojis.sort(() => Math.random() - 0.5).slice(0, 6);
-            cards = [...selectedEmojis, ...selectedEmojis].sort(() => Math.random() - 0.5);
-            
-            const displayArea = document.getElementById('displayArea');
-            displayArea.innerHTML = `
-                <div class="card-grid">
-                    ${cards.map((emoji, index) => `
-                        <div class="memory-card" data-index="${index}" data-emoji="${emoji}">
-                            <span class="card-back">?</span>
-                            <span class="card-front">${emoji}</span>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="status-text" id="statusText">Find all matching pairs!</div>
-            `;
-            
-            document.querySelectorAll('.memory-card').forEach(card => {
-                card.addEventListener('click', () => flipCard(card));
-            });
-        }
-
-        function flipCard(card) {
-            if (!gameActive || !canFlip) return;
-            if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
-            
-            card.classList.add('flipped');
-            flippedCards.push(card);
-            
-            if (flippedCards.length === 2) {
-                moves++;
-                updateGameDisplay();
-                canFlip = false;
-                checkMatch();
-            }
-        }
-
-        function checkMatch() {
-            const [card1, card2] = flippedCards;
-            const emoji1 = card1.getAttribute('data-emoji');
-            const emoji2 = card2.getAttribute('data-emoji');
-            
-            if (emoji1 === emoji2) {
-                card1.classList.add('matched');
-                card2.classList.add('matched');
-                matchedPairs++;
-                flippedCards = [];
-                canFlip = true;
-                updateGameDisplay();
-                
-                if (matchedPairs === 6) {
-                    setTimeout(() => gameOver(), 500);
-                }
-            } else {
-                setTimeout(() => {
-                    card1.classList.remove('flipped');
-                    card2.classList.remove('flipped');
-                    flippedCards = [];
-                    canFlip = true;
-                }, 800);
-            }
-        }
-
-        function updateGameDisplay() {
-            document.getElementById('pairsFound').textContent = matchedPairs + '/6';
-            document.getElementById('movesDisplay').textContent = moves;
-            document.getElementById('timeDisplay').textContent = timeElapsed + 's';
-        }
-
-        function startTimer() {
-            timeElapsed = 0;
-            timerInterval = setInterval(() => {
-                timeElapsed++;
-                updateGameDisplay();
-            }, 1000);
-        }
-
-        function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-        }
-
-        function startGame() {
-            flippedCards = [];
-            matchedPairs = 0;
-            moves = 0;
-            timeElapsed = 0;
-            gameActive = true;
-            canFlip = true;
-            
-            document.getElementById('startGameBtn').disabled = true;
-            document.getElementById('resultsBox').classList.add('hidden');
-            
-            createCards();
-            updateGameDisplay();
-            startTimer();
-        }
-
-        function gameOver() {
-            gameActive = false;
-            stopTimer();
-            document.getElementById('startGameBtn').disabled = false;
-            
-            // Update stats
-            const stats = getStats();
-            stats.gamesPlayed++;
-            if (!stats.bestTime || timeElapsed < stats.bestTime) {
-                stats.bestTime = timeElapsed;
-            }
-            if (!stats.bestMoves || moves < stats.bestMoves) {
-                stats.bestMoves = moves;
-            }
-            saveStats(stats);
-            
-            // Show results
-            const resultsBox = document.getElementById('resultsBox');
-            let html = '<h3>🎉 Complete!</h3>';
-            html += `<div class="result-value">${timeElapsed}s</div>`;
-            html += `<div class="result-message">Time: ${timeElapsed} seconds</div>`;
-            html += `<div class="result-message">Moves: ${moves}</div>`;
-            
-            if (moves === stats.bestMoves) {
-                html += `<div class="new-record">🏆 New Best Score!</div>`;
-            }
-            
-            html += `<div class="result-message" style="color: #ffd700; font-size: 1.3em; margin-top: 20px;">Rating: ${getRating(stats.bestMoves)}</div>`;
-            
-            resultsBox.innerHTML = html;
-            resultsBox.classList.remove('hidden');
-        }
-
-        // ==================== EVENT LISTENERS ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            // Login keypad
-            document.querySelectorAll('#pinLoginScreen .pin-key[data-num]').forEach(key => {
-                key.addEventListener('click', () => handleLoginKeyPress(key.dataset.num));
-            });
-            document.querySelector('#pinLoginScreen .pin-key.delete').addEventListener('click', handleLoginDelete);
-            
-            // Create keypad
-            document.querySelectorAll('#pinCreateScreen .pin-key[data-num]').forEach(key => {
-                key.addEventListener('click', () => handleCreateKeyPress(key.dataset.num));
-            });
-            document.querySelector('#pinCreateScreen .pin-key.delete').addEventListener('click', handleCreateDelete);
-            
-            // Toggle links
-            document.getElementById('showCreatePin').addEventListener('click', () => {
-                currentPIN = '';
-                confirmPIN = '';
-                isConfirming = false;
-                clearPinMessage('createPinMessage');
-                document.getElementById('createPinTitle').textContent = 'Create PIN';
-                document.getElementById('createPinSubtitle').textContent = 'Choose a 4-digit PIN';
-                updatePinDots('createDot', 0);
-                showScreen('pinCreateScreen');
-            });
-            
-            document.getElementById('showLoginPin').addEventListener('click', () => {
-                currentPIN = '';
-                clearPinMessage('pinMessage');
-                updatePinDots('dot', 0);
-                showScreen('pinLoginScreen');
-            });
-            
-            // Dashboard buttons
-            document.getElementById('startPlayingBtn').addEventListener('click', () => {
-                showScreen('gameScreen');
-                initGame();
-            });
-            
-            document.getElementById('dashLogoutBtn').addEventListener('click', () => {
-                if (confirm('Logout?')) {
-                    logout();
-                    currentPIN = '';
-                    updatePinDots('dot', 0);
-                    clearPinMessage('pinMessage');
-                    showScreen('pinLoginScreen');
-                }
-            });
-            
-            document.getElementById('gameLogoutBtn').addEventListener('click', () => {
-                stopTimer();
-                loadDashboard();
-            });
-            
-            document.getElementById('startGameBtn').addEventListener('click', startGame);
-            
-            // Initialize
-            if (hasPIN()) {
-                showScreen('pinLoginScreen');
-            } else {
-                showScreen('pinCreateScreen');
-            }
-        });
-    </script>
+<div class="top-bar"><a href="https://hooporiapr-oss.github.io/akashic-works/" class="back">Home</a><div class="banner" id="bannerEl">3 free</div></div>
+<div class="title">Memory Match</div>
+<div class="subtitle">Brain Training</div>
+<div class="box" id="loginBox">
+<div class="pin-title">Enter PIN</div>
+<div class="pin-sub">Enter your 4-digit PIN</div>
+<div class="dots"><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div></div>
+<div class="keypad" id="loginPad"></div>
+<div class="msg" id="loginMsg"></div>
+<div class="toggle">No account? <span id="toCreate">Create PIN</span></div>
+</div>
+<div class="box hidden" id="createBox">
+<div class="pin-title" id="createTitle">Create PIN</div>
+<div class="pin-sub" id="createSub">Choose a 4-digit PIN</div>
+<div class="dots"><div class="dot" id="c1"></div><div class="dot" id="c2"></div><div class="dot" id="c3"></div><div class="dot" id="c4"></div></div>
+<div class="keypad" id="createPad"></div>
+<div class="msg" id="createMsg"></div>
+<div class="toggle">Have PIN? <span id="toLogin">Login</span></div>
+</div>
+<div class="box hidden" id="dashBox">
+<div class="welcome"><h3>Welcome!</h3><p>Find matching pairs</p></div>
+<div class="stats"><div class="stat"><b id="dGames">0</b><span>Games</span></div><div class="stat"><b id="dBest">--</b><span>Best Moves</span></div><div class="stat"><b id="dAvg">--</b><span>Avg Moves</span></div><div class="stat"><b id="dRate">--</b><span>Rating</span></div></div>
+<button class="btn" id="startBtn">Start Game</button>
+<button class="btn btn2" id="logoutBtn">Logout</button>
+</div>
+<div class="box hidden" id="gameBox">
+<div class="game-info"><div class="game-stat"><b id="gMoves">0</b><span>Moves</span></div><div class="game-stat"><b id="gPairs">0/8</b><span>Pairs</span></div><div class="game-stat"><b id="gTime">0:00</b><span>Time</span></div></div>
+<div class="grid-container"><div class="match-grid" id="matchGrid"></div></div>
+<button class="btn btn2" id="quitBtn">Quit</button>
+</div>
+<div class="res-bg hidden" id="resBg">
+<div class="res">
+<h2>Complete!</h2>
+<div class="res-score" id="resMoves">0</div>
+<div class="res-label">Moves</div>
+<div class="res-details"><div class="res-detail"><b id="resTime">0:00</b><span>Time</span></div><div class="res-detail"><b id="resPairs">8</b><span>Pairs</span></div></div>
+<div class="record hidden" id="resRecord">New Record!</div>
+<div class="rating" id="resRating">Rating: --</div>
+<button class="btn" id="againBtn">Play Again</button>
+<button class="btn btn2" id="menuBtn">Menu</button>
+</div>
+</div>
+<div class="popup-bg hidden" id="limitPopup">
+<div class="popup">
+<h3 id="limitTitle">Daily limit reached</h3>
+<p id="limitMsg">You used 3 free plays today</p>
+<a href="https://hooporiapr-oss.github.io/akashic-works/">Return Home</a>
+<button id="upgradeBtn">Unlock Unlimited</button>
+</div>
+</div>
+<script>
+(function(){
+var PK="mmen2_pin",SK="mmen2_stats_",DK="mmen2_device",MAX_DAILY=3,MAX_DAYS=3;
+var currentPin="",moves=0,pairs=0,firstCard=null,secondCard=null,canFlip=true,timerInt=null,seconds=0;
+var ICONS=["🌟","🎯","🔥","💎","🎨","🎭","🎪","🎢","🌈","🦋","🌸","🍀"];
+var cards=[];
+function $(id){return document.getElementById(id);}
+function getDeviceId(){var id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem(DK,id);}return id;}
+function getToday(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function getDeviceTries(){var key=DK+"_tries";try{var t=JSON.parse(localStorage.getItem(key));if(t&&t.startDate)return t;}catch(e){}return{n:0,d:getToday(),startDate:getToday(),daysUsed:[]};}
+function setDeviceTries(t){localStorage.setItem(DK+"_tries",JSON.stringify(t));}
+function getDaysDiff(startDate){var start=new Date(startDate);var now=new Date();return Math.floor((now-start)/(1000*60*60*24));}
+function canPlay(){var t=getDeviceTries(),today=getToday();var daysSinceStart=getDaysDiff(t.startDate);if(daysSinceStart>=MAX_DAYS)return{ok:false,left:0,expired:true,daysLeft:0};if(t.d!==today){t.n=0;t.d=today;if(t.daysUsed.indexOf(today)===-1)t.daysUsed.push(today);setDeviceTries(t);}return{ok:t.n<MAX_DAILY,left:MAX_DAILY-t.n,expired:false,daysLeft:MAX_DAYS-daysSinceStart};}
+function useTry(){var t=getDeviceTries(),today=getToday();if(t.d!==today){t.n=0;t.d=today;if(t.daysUsed.indexOf(today)===-1)t.daysUsed.push(today);}t.n++;setDeviceTries(t);showBanner();}
+function hash(p){var h=0,s=p+"mmen2";for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h&=h;}return h.toString(36);}
+function getPins(){try{return JSON.parse(localStorage.getItem(PK))||{};}catch(e){return{};}}
+function savePins(p){localStorage.setItem(PK,JSON.stringify(p));}
+function checkPin(p){return!!getPins()[hash(p)];}
+function savePin(p){var pins=getPins();pins[hash(p)]={created:Date.now()};savePins(pins);}
+function getStats(){try{return JSON.parse(localStorage.getItem(SK+hash(currentPin)))||{games:0,bestMoves:0,totalMoves:0};}catch(e){return{games:0,bestMoves:0,totalMoves:0};}}
+function setStats(s){localStorage.setItem(SK+hash(currentPin),JSON.stringify(s));}
+function showBanner(){var c=canPlay();$("bannerEl").textContent=c.expired?"Trial ended":c.left+"/"+MAX_DAILY+" (Day "+c.daysLeft+" left)";}
+function showLimit(){var c=canPlay();$("limitTitle").textContent=c.expired?"Free trial ended":"Daily limit reached";$("limitMsg").textContent=c.expired?"Your 3-day free trial has expired":"You used "+MAX_DAILY+" free plays today. "+c.daysLeft+" day(s) left.";$("limitPopup").classList.remove("hidden");}
+function show(id){["loginBox","createBox","dashBox","gameBox"].forEach(function(x){$(x).classList.add("hidden");});$(id).classList.remove("hidden");}
+function setDots(pre,n){for(var i=1;i<=4;i++){var el=$(pre+i);if(el){if(i<=n)el.classList.add("on");else el.classList.remove("on");}}}
+function setMsg(id,t,isErr){var m=$(id);m.textContent=t;m.className="msg "+(isErr?"err":"ok");}
+function getRating(mv){if(!mv||mv<1)return"--";if(mv<=16)return"Genius";if(mv<=20)return"Expert";if(mv<=26)return"Great";if(mv<=32)return"Good";return"Learning";}
+function formatTime(s){return Math.floor(s/60)+":"+(s%60<10?"0":"")+s%60;}
+var loginPin="",createPin="",confirmPin="",isConfirming=false;
+function buildKeypad(cid,onDigit,onDel){var c=$(cid);c.innerHTML="";for(var i=1;i<=9;i++){(function(d){var b=document.createElement("button");b.className="key";b.textContent=d;b.onclick=function(){onDigit(d);};c.appendChild(b);})(i);}var e=document.createElement("button");e.className="key empty";c.appendChild(e);var z=document.createElement("button");z.className="key";z.textContent="0";z.onclick=function(){onDigit(0);};c.appendChild(z);var del=document.createElement("button");del.className="key";del.textContent="<";del.onclick=onDel;c.appendChild(del);}
+function setupLogin(){buildKeypad("loginPad",function(d){if(loginPin.length<4){loginPin+=d;setDots("d",loginPin.length);if(loginPin.length===4){setTimeout(function(){if(checkPin(loginPin)){currentPin=loginPin;loadDash();}else{setMsg("loginMsg","Wrong PIN",true);loginPin="";setDots("d",0);}},200);}}},function(){if(loginPin.length>0){loginPin=loginPin.slice(0,-1);setDots("d",loginPin.length);$("loginMsg").textContent="";}});}
+function setupCreate(){buildKeypad("createPad",function(d){if(confirmPin.length<4){confirmPin+=d;setDots("c",confirmPin.length);if(confirmPin.length===4){setTimeout(function(){if(!isConfirming){createPin=confirmPin;confirmPin="";isConfirming=true;$("createTitle").textContent="Confirm PIN";$("createSub").textContent="Enter PIN again";setDots("c",0);}else{if(confirmPin===createPin){savePin(createPin);currentPin=createPin;setMsg("createMsg","PIN created!",false);setTimeout(loadDash,500);}else{setMsg("createMsg","PINs dont match",true);createPin="";confirmPin="";isConfirming=false;$("createTitle").textContent="Create PIN";$("createSub").textContent="Choose a 4-digit PIN";setDots("c",0);}}},200);}}},function(){if(confirmPin.length>0){confirmPin=confirmPin.slice(0,-1);setDots("c",confirmPin.length);$("createMsg").textContent="";}});}
+function loadDash(){var s=getStats();$("dGames").textContent=s.games||0;$("dBest").textContent=s.bestMoves||"--";$("dAvg").textContent=s.games>0?Math.round(s.totalMoves/s.games):"--";$("dRate").textContent=getRating(s.bestMoves);show("dashBox");showBanner();if(!canPlay().ok)showLimit();}
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t;}return arr;}
+function buildGrid(){var g=$("matchGrid");g.innerHTML="";g.style.gridTemplateColumns="repeat(4,1fr)";var icons=ICONS.slice(0,8);cards=shuffle(icons.concat(icons).map(function(ic,i){return{id:i,icon:ic,matched:false};}));cards.forEach(function(card,idx){var cell=document.createElement("div");cell.className="match-cell";cell.dataset.idx=idx;cell.textContent="";cell.onclick=function(){flipCard(idx);};g.appendChild(cell);});}
+function flipCard(idx){if(!canFlip||cards[idx].matched)return;var cells=$("matchGrid").children;var cell=cells[idx];if(cell.classList.contains("flipped"))return;cell.classList.add("flipped");cell.textContent=cards[idx].icon;if(!firstCard){firstCard={idx:idx,icon:cards[idx].icon};}else if(firstCard.idx!==idx){secondCard={idx:idx,icon:cards[idx].icon};moves++;$("gMoves").textContent=moves;canFlip=false;if(firstCard.icon===secondCard.icon){cards[firstCard.idx].matched=true;cards[secondCard.idx].matched=true;cells[firstCard.idx].classList.add("matched");cells[secondCard.idx].classList.add("matched");pairs++;$("gPairs").textContent=pairs+"/8";firstCard=null;secondCard=null;canFlip=true;if(pairs===8)endGame();}else{setTimeout(function(){cells[firstCard.idx].classList.remove("flipped");cells[firstCard.idx].textContent="";cells[secondCard.idx].classList.remove("flipped");cells[secondCard.idx].textContent="";firstCard=null;secondCard=null;canFlip=true;},800);}}}
+function startTimer(){seconds=0;$("gTime").textContent="0:00";if(timerInt)clearInterval(timerInt);timerInt=setInterval(function(){seconds++;$("gTime").textContent=formatTime(seconds);},1000);}
+function startGame(){if(!canPlay().ok){showLimit();return;}moves=0;pairs=0;firstCard=null;secondCard=null;canFlip=true;$("gMoves").textContent="0";$("gPairs").textContent="0/8";buildGrid();show("gameBox");startTimer();}
+function endGame(){if(timerInt)clearInterval(timerInt);var s=getStats();s.games++;s.totalMoves+=moves;var isRec=!s.bestMoves||moves<s.bestMoves;if(isRec)s.bestMoves=moves;setStats(s);useTry();$("resMoves").textContent=moves;$("resTime").textContent=formatTime(seconds);$("resPairs").textContent="8";$("resRating").textContent="Rating: "+getRating(moves);if(isRec){$("resRecord").classList.remove("hidden");}else{$("resRecord").classList.add("hidden");}$("resBg").classList.remove("hidden");if(!canPlay().ok)setTimeout(showLimit,1500);}
+document.addEventListener("DOMContentLoaded",function(){getDeviceId();setupLogin();setupCreate();$("toCreate").onclick=function(){createPin="";confirmPin="";isConfirming=false;$("createTitle").textContent="Create PIN";$("createSub").textContent="Choose a 4-digit PIN";setDots("c",0);$("createMsg").textContent="";show("createBox");};$("toLogin").onclick=function(){loginPin="";setDots("d",0);$("loginMsg").textContent="";show("loginBox");};$("startBtn").onclick=function(){if(!canPlay().ok){showLimit();return;}startGame();};$("logoutBtn").onclick=function(){loginPin="";currentPin="";setDots("d",0);show("loginBox");};$("quitBtn").onclick=function(){if(timerInt)clearInterval(timerInt);loadDash();};$("againBtn").onclick=function(){$("resBg").classList.add("hidden");if(!canPlay().ok){showLimit();return;}startGame();};$("menuBtn").onclick=function(){$("resBg").classList.add("hidden");loadDash();};$("upgradeBtn").onclick=function(){location.href="mailto:support@akashic.works?subject=Pro%20Upgrade";};show("loginBox");showBanner();});
+})();
+</script>
 </body>
 </html>
